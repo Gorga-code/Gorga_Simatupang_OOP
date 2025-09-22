@@ -10,7 +10,10 @@ public class PlayerRepository extends BaseRepository<Player, UUID> {
     public void save(Player player) {
         UUID id = getId(player);
         dataMap.put(id, player);
-        allData.add(player);
+
+        if (!allData.contains(player)) { // biar tidak dobel
+            allData.add(player);
+        }
     }
 
     @Override
@@ -39,6 +42,19 @@ public class PlayerRepository extends BaseRepository<Player, UUID> {
     public List<Player> findByHighscoreGreaterThan(int minScore) {
         return allData.stream()
                 .filter(player -> player.getHighScore() > minScore)
+                .collect(Collectors.toList());
+    }
+
+    // Tambahan sesuai nomor 2
+    public List<Player> findAllByOrderByTotalCoinsDesc() {
+        return allData.stream()
+                .sorted((p1, p2) -> Integer.compare(p2.getTotalCoins(), p1.getTotalCoins()))
+                .collect(Collectors.toList());
+    }
+
+    public List<Player> findAllByOrderByTotalDistanceTravelledDesc() {
+        return allData.stream()
+                .sorted((p1, p2) -> Integer.compare(p2.getTotalDistanceTravelled(), p1.getTotalDistanceTravelled()))
                 .collect(Collectors.toList());
     }
 }
