@@ -1,73 +1,104 @@
 package Service;
 
-import Model.Player;
-import java.util.*;
-import java.util.stream.Collectors;
+import Model.Score;
+import Repository.ScoreRepository;
+import Repository.PlayerRepository;
 
-public abstract class ScoreService{
-     private final scoreRepository ScoreRepository;
-     private final playerRepository PlayerRepository;
-     private final playerService PlayerService;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-     public ScoreService(ScoreRepository scoreRepository, PlayerRepository playerRepository, PlayerService playerService) {
+public class ScoreService {
+
+    private ScoreRepository scoreRepository;
+    private PlayerRepository playerRepository;
+    private PlayerService playerService;
+
+    public ScoreService(ScoreRepository scoreRepository, PlayerRepository playerRepository, PlayerService playerService) {
         this.scoreRepository = scoreRepository;
         this.playerRepository = playerRepository;
         this.playerService = playerService;
     }
 
-    public List<Score> createScore(Score score){
+    public Score createScore(Score score) {
+        // Verify player exists
+        if (!playerRepository.findById(score.getPlayerId()).isPresent()) {
+            throw new RuntimeException("Player not found with ID: " + score.getPlayerId());
+        }
 
+        // Save the score
+        scoreRepository.save(score);
+
+        // Update player statistics
+        playerService.updatePlayerStats(
+                score.getPlayerId(), // Tidak perlu cast ke UUID
+                score.getValue(),
+                score.getCoinsCollected(),
+                score.getDistance()
+        );
+
+        return score;
     }
 
-    public Optional<Score> getScoreById(UUID scoreId){
-
+    public Optional<Score> getScoreById(UUID scoreId) {
+        return scoreRepository.findById(scoreId);
     }
 
-    public void getAllScores(){
-
+    public List<Score> getAllScores() {
+        return scoreRepository.findAll();
     }
 
-    public void getScoresByPlayerId(UUID playerId){
-
-    }
-    
-    public List<Score> getScoresByPlayerIdOrderByValue(UUID playerId){
-
+    public List<Score> getScoresByPlayerId(UUID playerId) {
+        return scoreRepository.findByPlayerId(playerId);
     }
 
-    public List<Score> getLeaderboard(int limit){
-
+    public List<Score> getScoresByPlayerIdOrderByValue(UUID playerId) {
+        return scoreRepository.findByPlayerIdOrderByValueDesc(playerId);
     }
 
-    public Optional<Score> getHighestScoreByPlayerId(UUID playerId){
-
+    public List<Score> getLeaderboard(int limit) {
+        return scoreRepository.findTopScores(limit);
     }
 
-    public List<Score> getScoresAboveValue(int minValue){
-
+    public Optional<Score> getHighestScoreByPlayerId(UUID playerId) {
+        return scoreRepository.findHighestScoreByPlayerId(playerId);
     }
 
-    public void  getRecentScores(){
-
+    public List<Score> getScoresAboveValue(int minValue) {
+        return scoreRepository.findByValueGreaterThan(minValue);
     }
 
-    public int getTotalCoinsByPlayerId(UUID playerId){
-
+    public List<Score> getRecentScores() {
+        return scoreRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    public int getTotalDistanceByPlayerId(UUID playerId){
-
+    public int getTotalCoinsByPlayerId(UUID playerId) {
+        Integer total = scoreRepository.getTotalCoinsByPlayerId(playerId);
+        return total != null ? total : 0;
     }
 
-    public void updateScore(UUID scoreId, Score updatedScore){
-
+    public int getTotalDistanceByPlayerId(UUID playerId) {
+        Integer total = scoreRepository.getTotalDistanceByPlayerId(playerId);
+        return total != null ? total : 0;
     }
 
-    public void deleteScore(UUID scoreId){
-
+    public Score updateScore(UUID scoreId, Score updatedScore) {
+        Score existingScore = scoreRepository.findById(scoreId)
+                .orElseThrow(() -> new RuntimeException("Score not found with ID: " + scoreId));
+        scoreRepository.save(existingScore);
+        return existingScore;
     }
 
-    public void deleteScoresByPlayerId(UUID playerId){
+    public void deleteScore(UUID scoreId) {
+        Score score = scoreRepository.findById(scoreId)
+                .orElseThrow(() -> new RuntimeException("Score not found with ID: " + scoreId));
+        scoreRepository.deleteById(scoreId);
+    }
 
+    public void deleteScoresByPlayerId(UUID playerId) {
+        List<Score> playerScores = scoreRepository.findByPlayerId(playerId);
+        for (Score score : playerScores) {
+            scoreRepository.delete(score);
+        }
     }
 }

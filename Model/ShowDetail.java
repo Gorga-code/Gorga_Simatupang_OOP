@@ -1,5 +1,5 @@
 package Model;
 
-public interface ShowDetail{
+public interface ShowDetail {
     void showDetail();
 }
