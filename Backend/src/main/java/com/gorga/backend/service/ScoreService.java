@@ -7,11 +7,11 @@ import com.gorga.backend.repository.PlayerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class ScoreService {
@@ -26,90 +26,88 @@ public class ScoreService {
     private PlayerService playerService;
 
     @Transactional
-    public Score createScore(Score score) {
-        UUID playerId = score.getPlayer().getId();
+    public Score createScore (Score score) {
+        UUID playerId = score.getPlayerId();
 
-        // Cek apakah player ada
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new RuntimeException("Player dengan ID " + playerId + " tidak ditemukan"));
-
-        // Simpan score baru
+        if (!playerRepository.existsById(playerId)) {
+            throw new RuntimeException("Player dengan ID " + playerId + " tidak ditemukan!");
+        }
         Score savedScore = scoreRepository.save(score);
 
-        // Update statistik player
-        playerService.updatePlayerStats(player, savedScore);
-
+        playerService.updatePlayerStats(playerId, score.getValue(), score.getCoinsCollected(), score.getDistanceTravelled());
         return savedScore;
     }
 
-    public Optional<Score> getScoreById(UUID scoreId) {
+    public Optional<Score> getScoreById(UUID scoreId){
         return scoreRepository.findById(scoreId);
     }
 
-    public List<Score> getAllScores() {
+    public List<Score> getAllScores(){
         return scoreRepository.findAll();
     }
 
-    public List<Score> getScoresByPlayerId(UUID playerId) {
+    public List<Score> getScoresByPlayerId(UUID playerId){
         return scoreRepository.findByPlayerId(playerId);
     }
 
-    public List<Score> getScoresByPlayerIdOrderByValue(UUID playerId) {
+    public List<Score> getScoresByPlayerIdOrderByValue(UUID playerId){
         return scoreRepository.findByPlayerIdOrderByValueDesc(playerId);
     }
 
     public List<Score> getLeaderboard(int limit) {
-        return scoreRepository.findTopScores(limit);
+        Pageable pageable = PageRequest.of(0, limit);
+        return scoreRepository.findTopScores(pageable);
     }
 
-    public Optional<Score>getHighestScoreByPlayerId(UUID playerId){
-        List<Score> scores =  scoreRepository.findHighestScoreByPlayerId(playerId);
-        if(scores.isEmpty()){return Optional.empty();}
-        else{return Optional.of((scores.get(0)));}
+    public Optional<Score> getHighestScoreByPlayerId(UUID playerId){
+        List<Score> scores = scoreRepository.findHighestScoreByPlayerId(playerId);
+        if (scores.isEmpty()){return Optional.empty();}
+        return Optional.of(scores.get(0));
     }
 
-    public List<Score>  getScoresAboveVale(Integer minValue){
-        return scoreRepository.findByValueGreaterThan();
+    public List<Score> getScoresAboveValue(Integer minValue){
+        return scoreRepository.findByValueGreaterThan(minValue);
     }
 
-    public List<Score> getRecentScores{
+    public List<Score> getRecentScores(){
         return scoreRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    public Integer getTotalCoinsByPlayerId( UUID playerId){
+    public Integer getTotalCoinsByPlayerId(UUID playerId){
         Integer total = scoreRepository.getTotalCoinsByPlayerId(playerId);
-        if(total == null){return 0;}
-        else{return total;}
+        if (total != null){return total;}
+        else{return 0;}
     }
 
     public Integer getTotalDistanceByPlayerId(UUID playerId){
         Integer total = scoreRepository.getTotalDistanceByPlayerId(playerId);
-        if(total == null){return 0;}
-        else{return total;}
+        if (total != null){return total;}
+        else{return 0;}
     }
 
-    public Score updateScore(UUID scoreId,  Score updatedScore) {
-        scoreRepository.findById(scoreId).orElseThrow(() -> new RuntimeException(...));
-        Score existingScore = null;
-        if(updatedScore.getValue() != null){
-            existingScore = updatedScore;
+    public Score updateScore(UUID scoreId, Score updatedScore){
+        Score existingScore = scoreRepository.findById(scoreId).orElseThrow(() -> new RuntimeException("Score tidak ditemukan"));
+        if (updatedScore.getValue() != null){
+            existingScore.setValue(updatedScore.getValue());
         }
-        assert existingScore != null;
+        if (updatedScore.getCoinsCollected() != null){
+            existingScore.setCoinsCollected(updatedScore.getCoinsCollected());
+        }
+        if (updatedScore.getDistanceTravelled() != null){
+            existingScore.setDistanceTravelled(updatedScore.getDistanceTravelled());
+        }
         return scoreRepository.save(existingScore);
     }
 
-    public void deleteScore( UUID scoreId){
-        if(scoreRepository.existsById()){
+    public void deleteScore(UUID scoreId){
+        if (scoreRepository.existsById(scoreId)){
             scoreRepository.deleteById(scoreId);
         }
-        else{
-            new RuntimeException("scoreRepository tidak ada, tidak bisa di delete");
-        }
+        else{throw new RuntimeException("Score tidak ditemukan");}
     }
 
-    public void deleteScoresByPlayerId(UUID playerId){
-        scoreRepository.findByPlayerId(playerId);
-        scoreRepository.deleteAll();
+    public void deleteScoresByPlayerId(UUID playerId) {
+        List<Score> scores = scoreRepository.findByPlayerId(playerId);
+        scoreRepository.deleteAll(scores);
     }
 }
-
