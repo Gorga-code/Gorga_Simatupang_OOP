@@ -3,152 +3,67 @@ package com.gorga.frontend;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.ScreenUtils;
 
-public class Main extends ApplicationAdapter {
-    private ShapeRenderer shape;
-    private float boxX, boxY;
-    private float boxSize = 100f; // ukuran kotak
-    private float speed = 300f; // px per detik
-    // movement flags
-    private boolean moveLeft, moveRight, moveUp, moveDown;
-
-    // color cycle: Merah -> Kuning -> Biru -> Merah ...
-    private Color[] colors = {Color.RED, Color.YELLOW, Color.BLUE};
-    private int colorIndex = 0;
+public class Main extends ApplicationAdapter{
+    private ShapeRenderer shapeRenderer;
+    private Player player;
+    private Ground ground;
+    private GameManager gameManager;
+    private OrthographicCamera camera;
+    private float cameraOffset = 0.2f;
 
     @Override
-    public void create() {
-        shape = new ShapeRenderer();
-        // center the box initially
-        boxX = Gdx.graphics.getWidth() / 2f - boxSize / 2f;
-        boxY = Gdx.graphics.getHeight() / 2f - boxSize / 2f;
-
-        // input handling: keyboard + mouse click
-        Gdx.input.setInputProcessor(new InputAdapter() {
-            @Override
-            public boolean keyDown(int keycode) {
-                switch (keycode) {
-                    case Input.Keys.A:
-                    case Input.Keys.LEFT:
-                        moveLeft = true;
-                        break;
-                    case Input.Keys.D:
-                    case Input.Keys.RIGHT:
-                        moveRight = true;
-                        break;
-                    case Input.Keys.W:
-                    case Input.Keys.UP:
-                        moveUp = true;
-                        break;
-                    case Input.Keys.S:
-                    case Input.Keys.DOWN:
-                        moveDown = true;
-                        break;
-                }
-                return true;
-            }
-
-            @Override
-            public boolean keyUp(int keycode) {
-                switch (keycode) {
-                    case Input.Keys.A:
-                    case Input.Keys.LEFT:
-                        moveLeft = false;
-                        break;
-                    case Input.Keys.D:
-                    case Input.Keys.RIGHT:
-                        moveRight = false;
-                        break;
-                    case Input.Keys.W:
-                    case Input.Keys.UP:
-                        moveUp = false;
-                        break;
-                    case Input.Keys.S:
-                    case Input.Keys.DOWN:
-                        moveDown = false;
-                        break;
-                }
-                return true;
-            }
-
-            @Override
-            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                // mouse click -> change color to next in cycle
-                colorIndex = (colorIndex + 1) % colors.length;
-                // print color change to terminal
-                Color c = colors[colorIndex];
-                System.out.println("Color changed to: " + colorName(colorIndex));
-                return true;
-            }
-        });
+    public void create(){
+        shapeRenderer = new ShapeRenderer();
+        gameManager = GameManager.getInstance();
+        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.setToOrtho(false);
+        player = new Player(new Vector2(100, Gdx.graphics.getHeight() / 2f));
+        ground = new Ground();
+        gameManager.startGame();
     }
 
     @Override
-    public void render() {
+    public void render(){
         float delta = Gdx.graphics.getDeltaTime();
+        update(delta);
 
-        // movement applied every frame for smooth motion
-        float dx = 0f, dy = 0f;
-        if (moveLeft)  dx -= speed * delta;
-        if (moveRight) dx += speed * delta;
-        if (moveUp)    dy += speed * delta;
-        if (moveDown)  dy -= speed * delta;
+        ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
 
-        boxX += dx;
-        boxY += dy;
-
-        // BONUS: clamp box so it can't go outside the screen
-        clampToScreen();
-
-        // clear background black
-        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        // draw box with current color
-        shape.begin(ShapeRenderer.ShapeType.Filled);
-        shape.setColor(colors[colorIndex]);
-        shape.rect(boxX, boxY, boxSize, boxSize);
-        shape.end();
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        ground.renderShape(shapeRenderer);
+        player.renderShape(shapeRenderer);
+        shapeRenderer.end();
     }
 
-    private void clampToScreen() {
-        float minX = 0f;
-        float minY = 0f;
-        float maxX = Gdx.graphics.getWidth() - boxSize;
-        float maxY = Gdx.graphics.getHeight() - boxSize;
+    private void update(float delta){
+        boolean isFlying = Gdx.input.isKeyPressed(Input.Keys.SPACE);
 
-        if (boxX < minX) boxX = minX;
-        if (boxX > maxX) boxX = maxX;
-        if (boxY < minY) boxY = minY;
-        if (boxY > maxY) boxY = maxY;
-    }
+        player.update(delta, isFlying);
+        player.checkBoundaries(ground, Gdx.graphics.getHeight());
+        updateCamera(delta);
+        ground.update(camera.position.x);
 
-    @Override
-    public void resize(int width, int height) {
-        // center again on resize (optional)
-        if (width > 0 && height > 0) {
-            // keep center relative to new size if you want
-            // here we keep the box within screen bounds
-            clampToScreen();
+        float distance = player.getDistanceTraveled();
+        if (distance > gameManager.getScore()) {
+            gameManager.setScore((int) distance);
+            System.out.println("Score: " + gameManager.getScore());
         }
     }
 
-    @Override
-    public void dispose() {
-        shape.dispose();
+    private void updateCamera(float delta){
+        float cameraFocus = player.getPosition().x + Gdx.graphics.getWidth() * cameraOffset;
+        camera.position.x = cameraFocus;
+        camera.update();
     }
 
-    // helper to print readable color name
-    private String colorName(int idx) {
-        switch (idx) {
-            case 0: return "Red";
-            case 1: return "Yellow";
-            case 2: return "Blue";
-            default: return "Unknown";
-        }
+    @Override
+    public void dispose(){
+        shapeRenderer.dispose();
     }
 }

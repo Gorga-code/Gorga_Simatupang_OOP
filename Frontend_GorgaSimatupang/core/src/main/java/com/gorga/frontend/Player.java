@@ -1,9 +1,10 @@
 package com.gorga.frontend;
 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class Player {
+public class Player{
     private Vector2 position;
     private Vector2 velocity;
     private float gravity = 2000f;
@@ -11,34 +12,83 @@ public class Player {
     private float maxVerticalSpeed = 700f;
     private Rectangle collider;
     private float width = 64f;
-    private float height = 48f;
-
+    private float height = 64f;
     private float baseSpeed = 300f;
     private float distanceTraveled = 0f;
 
-    public startPosition(){
-        position = new Vector2();
-        velocity = new Vector2();
-        collider = new Rectangle();
+    public Player(Vector2 startPosition){
+        position = new Vector2(startPosition);
+        velocity = new Vector2(baseSpeed, 0);
+        collider = new Rectangle(position.x, position.y, width, height);
     }
 
-    public update(float delta, boolean isFlying){
-        private updateDistanceAndSpeed(float delta){
-            //
-        }
-        private updatePosition(float delta){
-            position.x = position.x * delta;
-            position.y = position.y * delta;
-        }
-        private applyGravity(float delta){
-            velocity.x = baseSpeed;
-            velocity.y = velocity.y - gravity * delta;
-            if(velocity.y > maxVerticalSpeed){velocity.y = maxVerticalSpeed;}
-            if(velocity.y < -maxVerticalSpeed){velocity.y = -maxVerticalSpeed;}
-            if(Player.isFlying){return fly(delta);}
-        }
-        private fly(float delta){
+    public void update(float delta, boolean isFlying){
+        updateDistanceAndSpeed(delta);
+        applyGravity(delta);
+        updatePosition(delta);
+        updateCollider();
+        if (isFlying) fly(delta);
+    }
 
+    private void updateDistanceAndSpeed(float delta){
+        distanceTraveled += baseSpeed * delta;
+    }
+
+    private void updatePosition(float delta){
+        position.x += velocity.x * delta;
+        position.y += velocity.y * delta;
+    }
+
+    private void applyGravity(float delta){
+        velocity.y -= gravity * delta;
+        velocity.x = baseSpeed;
+        if (velocity.y > maxVerticalSpeed){ velocity.y = maxVerticalSpeed;}
+        if (velocity.y < -maxVerticalSpeed){ velocity.y = -maxVerticalSpeed;}
+    }
+
+    private void fly(float delta){
+        velocity.y = force * delta;
+    }
+
+    private void updateCollider(){
+        collider.set(position.x, position.y, width, height);
+    }
+
+    public void checkBoundaries(Ground ground, float ceilingY){
+        if (ground.isColliding(collider)){
+            position.y = ground.getTopY();
+            velocity.y = 0;
         }
+        if (position.y + height > ceilingY){
+            position.y = ceilingY - height;
+            velocity.y = 0;
+        }
+        updateCollider();
+    }
+
+    public void renderShape(ShapeRenderer shapeRenderer) {
+        shapeRenderer.setColor(0.2f, 0.8f, 0.2f, 1f);
+        shapeRenderer.rect(position.x, position.y, width, height);
+    }
+
+
+    public Vector2 getPosition(){
+        return position;
+    }
+
+    public float getWidth(){
+        return width;
+    }
+
+    public float getHeight(){
+        return height;
+    }
+
+    public Rectangle getCollider(){
+        return collider;
+    }
+
+    public float getDistanceTraveled(){
+        return distanceTraveled / 10;
     }
 }

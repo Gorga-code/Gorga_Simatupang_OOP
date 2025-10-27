@@ -5,30 +5,30 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 
 import static com.badlogic.gdx.math.Intersector.overlaps;
-
-public class Ground {
-    static final float GROUND_HEIGHT = 50f;
+public class Ground{
+    private static final float GROUND_HEIGHT = 50f;
     private Rectangle collider;
 
-    collider = new Rectangle;
-
-    Gdx.graphics.getWidth()
+    public Ground(){
+        collider = new Rectangle(0, 0, Gdx.graphics.getWidth() * 2f, GROUND_HEIGHT);
+    }
 
     public void update(float cameraX){
-        collider = cameraX - Gdx.graphics.getWidth() / 2f - 500;
+        float posX = cameraX - Gdx.graphics.getWidth() / 2f - 500f;
+        collider.setPosition(posX, 0);
+        collider.setWidth(Gdx.graphics.getWidth() * 2f);
     }
 
     public boolean isColliding(Rectangle playerCollider){
-        if(collider.overlaps(playerCollider)){
-            return true;
-        }
+        return collider.overlaps(playerCollider);
     }
 
     public float getTopY(){
         return GROUND_HEIGHT;
     }
 
-    public void renderShape(ShapeRenderer shapeRenderer){
-        shapeRenderer = (colorIndex + 1) % colors.length;
+    public void renderShape(ShapeRenderer shapeRenderer) {
+        shapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1f);
+        shapeRenderer.rect(collider.x, collider.y, collider.width, collider.height);
     }
 }
