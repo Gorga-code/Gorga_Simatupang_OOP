@@ -1,6 +1,7 @@
 package com.gorga.frontend.obstacles;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 public abstract class BaseObstacle {
@@ -26,18 +27,20 @@ public abstract class BaseObstacle {
         if(active){drawShape(shapeRenderer);}
     }
 
-    public boolean isColliding(Rectangle playerCollider){
-        if(active && collider.overlaps(playerCollider){
+    public boolean isColliding(Rectangle playerCollider) {
+        if (active && collider.overlaps(playerCollider)) {
             return true;
         }
+        return false;
     }
+
 
     public boolean isActive(){
         return active;
     }
 
     public boolean isOffScreenCamera(float cameraLeftEdge){
-        if(getRenderWidth()){return true;}
+        return position.x + getRenderWidth() < cameraLeftEdge;
     }
 
     abstract protected void updateCollider();
