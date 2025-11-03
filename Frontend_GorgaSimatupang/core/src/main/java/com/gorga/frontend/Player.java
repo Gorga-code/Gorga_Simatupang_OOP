@@ -3,7 +3,6 @@ package com.gorga.frontend;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-
 public class Player{
     private Vector2 position;
     private Vector2 velocity;
@@ -15,13 +14,11 @@ public class Player{
     private float height = 64f;
     private float baseSpeed = 300f;
     private float distanceTraveled = 0f;
-
     public Player(Vector2 startPosition){
         position = new Vector2(startPosition);
         velocity = new Vector2(baseSpeed, 0);
         collider = new Rectangle(position.x, position.y, width, height);
     }
-
     public void update(float delta, boolean isFlying){
         updateDistanceAndSpeed(delta);
         applyGravity(delta);
@@ -65,7 +62,6 @@ public class Player{
         }
         updateCollider();
     }
-
     public void renderShape(ShapeRenderer shapeRenderer) {
         shapeRenderer.setColor(0.2f, 0.8f, 0.2f, 1f);
         shapeRenderer.rect(position.x, position.y, width, height);

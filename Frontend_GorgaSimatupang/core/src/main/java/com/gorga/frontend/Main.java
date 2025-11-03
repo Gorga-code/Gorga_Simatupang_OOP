@@ -31,37 +31,30 @@ public class Main extends ApplicationAdapter{
     public void render(){
         float delta = Gdx.graphics.getDeltaTime();
         update(delta);
-
         ScreenUtils.clear(0.1f, 0.1f, 0.1f, 1);
-
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         ground.renderShape(shapeRenderer);
         player.renderShape(shapeRenderer);
         shapeRenderer.end();
     }
-
     private void update(float delta){
         boolean isFlying = Gdx.input.isKeyPressed(Input.Keys.SPACE);
-
         player.update(delta, isFlying);
         player.checkBoundaries(ground, Gdx.graphics.getHeight());
         updateCamera(delta);
         ground.update(camera.position.x);
-
         float distance = player.getDistanceTraveled();
         if (distance > gameManager.getScore()) {
             gameManager.setScore((int) distance);
             System.out.println("Score: " + gameManager.getScore());
         }
     }
-
     private void updateCamera(float delta){
         float cameraFocus = player.getPosition().x + Gdx.graphics.getWidth() * cameraOffset;
         camera.position.x = cameraFocus;
         camera.update();
     }
-
     @Override
     public void dispose(){
         shapeRenderer.dispose();
