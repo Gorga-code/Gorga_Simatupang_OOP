@@ -2,7 +2,7 @@ package com.gorga.frontend.commands;
 
 import com.gorga.frontend.Player;
 
-public class JetpackCommand extends Command{
+public class JetpackCommand implements Command{
     private Player player;
     public JetpackCommand(Player player) {
         this.player = player;

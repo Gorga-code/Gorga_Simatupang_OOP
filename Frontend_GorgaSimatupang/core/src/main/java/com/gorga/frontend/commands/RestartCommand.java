@@ -3,7 +3,7 @@ package com.gorga.frontend.commands;
 import com.gorga.frontend.GameManager;
 import com.gorga.frontend.Player;
 
-public class RestartCommand extends Command{
+public class RestartCommand implements Command{
     private Player player;
     private GameManager gameManager;
 

@@ -5,27 +5,24 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class ScoreUIObserver implements Observer{
     private BitmapFont font;
-    private SpriteBatch batch;
 
-    public ScoreUIObserver(SpriteBatch batch){
+    public ScoreUIObserver() {
         font = new BitmapFont();
-        font.setColor(255,255,255,255);
-        batch = new SpriteBatch();
+        font.setColor(1, 1, 1, 1); // White
     }
 
+    @Override
     public void update(int score){
-        System.out.println("score telah diperbarui");
+        System.out.println("Score diperbarui: " + score);
     }
 
-    public void render(int score){
+    public void render(SpriteBatch batch, int score){
         batch.begin();
-        batch.draw();
-        System.out.println("Score : " + score);
+        font.draw(batch, "Score: " + score, 20, 460);
         batch.end();
     }
 
-    public void dispose(){
-        batch.dispose();
+    public void dispose() {
         font.dispose();
     }
 }

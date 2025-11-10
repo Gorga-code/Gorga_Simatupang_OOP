@@ -1,6 +1,7 @@
 package com.gorga.frontend.observers;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ScoreManager implements Subject{
     private List<Observer> observers =  new ArrayList<>();

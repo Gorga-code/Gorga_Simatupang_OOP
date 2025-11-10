@@ -73,7 +73,7 @@ public class Player {
         }
     }
 
-    private void fly() {
+    public void fly() {
         if (!isDead) {
             velocity.y += force;
         }
