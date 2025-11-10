@@ -10,38 +10,38 @@ public abstract class ObjectPool<T> {
     protected abstract T createObject();
     protected abstract void resetObject(T object);
 
-    public T obtain(){
+    public T obtain() {
         T object;
-        if(available.isEmpty()){
+        if (available.isEmpty()) {
             object = createObject();
-        }
-        else{
+        } else {
             object = available.remove(available.size() - 1);
         }
         inUse.add(object);
         return object;
     }
 
-    public void release(T object){
-        if(inUse.remove(object)){
+    public void release(T object) {
+        if (inUse.remove(object)) {
             resetObject(object);
             available.add(object);
         }
     }
 
-    public void releaseAll(){
-        for(T object : inUse){
+    public void releaseAll() {
+        for (T object : inUse) {
             resetObject(object);
             available.add(object);
         }
         inUse.clear();
     }
 
-    public List<T> getInUse(){
+    public List<T> getInUse() {
         return new ArrayList<>(inUse);
     }
 
-    public int getActiveCount(){
+    public int getActiveCount() {
         return inUse.size();
     }
 }
+

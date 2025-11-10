@@ -12,55 +12,54 @@ public class HomingMissile extends BaseObstacle {
     private float width = 40f;
     private float height = 20f;
 
-    public HomingMissile(Vector2 startPosition){
-        super(startPosition, 0);
-        velocity = new Vector2();
+    public HomingMissile(Vector2 startPosition) {
+        super(startPosition,0);
+        this.velocity = new Vector2();
     }
 
     @Override
-    public void initialize(Vector2 startPosition, int length){
+    public void initialize(Vector2 startPosition, int length) {
         super.initialize(startPosition, length);
-        velocity.set(0,0);
+        this.velocity.set(0, 0);
     }
 
-    public void setTarget(Player target){
+    public void setTarget(Player target) {
         this.target = target;
     }
 
-    public boolean isTargetingPlayer(){
-        if(target == null) return false;
-        float missileCenterX = position.x + width / 2f;
+    public boolean isTargetingPlayer() {
+        if (target == null) return false;
         float playerCenterX = target.getPosition().x + target.getWidth() / 2f;
-        return missileCenterX < playerCenterX;
+        float missileCenterX = position.x + width / 2f;
+        return playerCenterX <= missileCenterX;
     }
 
-    public void update(float delta){
-        if(target != null && active && isTargetingPlayer()){
-            Vector2 targetPosition = new Vector2(target.getPosition());
-            velocity.set(targetPosition).sub(position).nor().scl(speed);
-            position.x += velocity.x * delta;
-            position.y += velocity.y * delta;
-            updateCollider();
+    public void update(float delta) {
+        if (target == null || !active) return;
+
+        if (isTargetingPlayer()) {
+            Vector2 targetPosition = target.getPosition(); // Ambil Posisi Player
+            velocity.set(targetPosition).sub(position).nor().scl(speed); // Mengatur velocity untuk mendekati player
         }
+
+        // Always move with current velocity
+        position.add(velocity.x * delta, velocity.y * delta);
+        updateCollider();
     }
 
     @Override
-    protected void updateCollider(){
+    protected void updateCollider() {
         collider = new Rectangle(position.x, position.y, width, height);
     }
 
     @Override
-    protected void drawShape(ShapeRenderer shapeRenderer){
+    protected void drawShape(ShapeRenderer shapeRenderer) {
         shapeRenderer.rect(position.x, position.y, width, height);
     }
 
     @Override
-    protected float getRenderWidth(){
+    protected float getRenderWidth() {
         return width;
     }
-
-    @Override
-    protected float getRenderHeight(){
-        return height;
-    }
 }
+
