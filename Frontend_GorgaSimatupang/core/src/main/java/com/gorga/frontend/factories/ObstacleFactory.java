@@ -26,9 +26,7 @@ public class ObstacleFactory {
         }
     }
 
-    private final List<WeightedCreator> weightedCreators = new ArrayList<>();
     private final Random random = new Random();
-    private int totalWeight = 0;
 
     public ObstacleFactory() {
         // Register creators with weights for spawn probability
@@ -36,11 +34,6 @@ public class ObstacleFactory {
         register(new VerticalLaserCreator(), 2);
         register(new HorizontalLaserCreator(), 2);
         register(new HomingMissileCreator(), 1);
-    }
-
-    public void register(ObstacleCreator creator, int weight) {
-        weightedCreators.add(new WeightedCreator(creator, weight));
-        totalWeight += weight;
     }
 
     /** Factory Method using weighted random selection */
@@ -96,6 +89,23 @@ public class ObstacleFactory {
             names.add(wc.creator.getName());
         }
         return names;
+    }
+
+    private final Map<String, ObstacleCreator> creators{
+        creators = new HashMap<>();
+    }
+
+    private final List<ObstacleCreator> weightedSelection{
+        weightedSelection =  new ArrayList<>();
+    }
+
+    private void register(ObstacleCreator creator){
+        creators.put(creator.getName(), creator);
+    }
+
+    public void setWeights(Map<String, Integer> weights){
+        weightedSelection.clear();
+        weightedSelection.iterator();
     }
 }
 
