@@ -8,7 +8,7 @@ import com.gorga.frontend.Player;
 public class HomingMissile extends BaseObstacle {
     private Player target;
     private Vector2 velocity;
-    private float speed = 200f;
+    private float speed = 100f;
     private float width = 40f;
     private float height = 20f;
 
@@ -62,4 +62,3 @@ public class HomingMissile extends BaseObstacle {
         return width;
     }
 }
-

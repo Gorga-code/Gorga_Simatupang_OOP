@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScoreManager implements Subject{
-    private List<Observer> observers =  new ArrayList<>();
+    private List<Observer> observers = new ArrayList<>();
     private int score = 0;
 
-    public ScoreManager(){
-        observers = new ArrayList<>();
-        score = 0;
+    public ScoreManager () {
+        this.observers = new ArrayList<>();
+        this.score = 0;
     }
 
-    public void addObserver(Observer observer){
+    @Override
+    public void addObserver(Observer observer) {
         observers.add(observer);
     }
 
@@ -20,20 +21,19 @@ public class ScoreManager implements Subject{
         observers.remove(observer);
     }
 
-    public void notifyObservers(int score){
-        for(Observer observer : observers){
+    @Override
+    public void notifyObservers(int score) {
+        for (Observer observer : observers) {
             observer.update(score);
         }
     }
-
-    public void setScore(int newScore){
-        if(newScore != score){
+    public void setScore(int newScore) {
+        if(newScore != score)
             score = newScore;
-            notifyObservers(score);
-        }
+        notifyObservers(score);
     }
 
-    public int getScore(){
+    public int getScore() {
         return score;
     }
 }

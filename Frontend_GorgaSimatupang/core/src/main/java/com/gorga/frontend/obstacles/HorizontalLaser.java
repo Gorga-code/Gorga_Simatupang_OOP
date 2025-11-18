@@ -29,4 +29,3 @@ public class HorizontalLaser extends BaseObstacle {
         return length;
     }
 }
-

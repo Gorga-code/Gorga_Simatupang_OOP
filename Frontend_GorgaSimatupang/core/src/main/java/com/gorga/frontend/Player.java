@@ -40,7 +40,7 @@ public class Player {
             updateDistanceAndSpeed(delta);
             applyGravity(delta);
             if (isFlying) {
-                fly();
+                fly(delta);
             }
             updatePosition(delta);
         }
@@ -73,9 +73,9 @@ public class Player {
         }
     }
 
-    public void fly() {
+    private void fly(float delta) {
         if (!isDead) {
-            velocity.y += force;
+            velocity.y += force * delta;
         }
     }
 
@@ -103,6 +103,12 @@ public class Player {
         shapeRenderer.rect(position.x, position.y, width, height);
     }
 
+    // Public method for command pattern
+    public void fly() {
+        if (!isDead) {
+            velocity.y += force * 1/60f; // Using a standard delta time
+        }
+    }
     public void die() {
         isDead = true;
         velocity.x = 0;

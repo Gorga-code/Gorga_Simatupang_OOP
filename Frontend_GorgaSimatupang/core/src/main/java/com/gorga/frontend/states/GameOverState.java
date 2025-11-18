@@ -5,28 +5,37 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class GameOverState implements GameState{
+public class GameOverState implements GameState {
     private final GameStateManager gsm;
     private final BitmapFont font;
 
-    public GameOverState(GameStateManager gsm) {
+    public GameOverState(GameStateManager gsm){
         this.gsm = gsm;
-        font = new BitmapFont();
+        this.font = new BitmapFont();
     }
 
     public void update(float delta){
         if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             gsm.set(new PlayingState(gsm));
+            return;
         }
     }
 
-    public void render(SpriteBatch batch){
-        System.out.println("GAME OVER");
-        System.out.println("Press SPACE to restart");
-        font.draw(Gdx.graphics.getWidth(), getHeight());
+    @Override
+    public void render(SpriteBatch batch) {
+        float x = Gdx.graphics.getWidth()/2;
+        float y = Gdx.graphics.getHeight()/2;
+        batch.begin();
+        font.draw(batch,"GAME OVER",x - 40,y + 20);
+
+        font.draw(batch,"Press SPACE to restart",x - 60,y - 20);
+        batch.end();
+
     }
 
-    public void dispose(){
+    @Override
+    public void dispose() {
+
         font.dispose();
     }
 }

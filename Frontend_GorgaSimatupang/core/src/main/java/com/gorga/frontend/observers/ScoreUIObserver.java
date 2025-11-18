@@ -1,28 +1,32 @@
 package com.gorga.frontend.observers;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class ScoreUIObserver implements Observer{
+public class ScoreUIObserver implements Observer {
     private BitmapFont font;
+    private SpriteBatch batch;
 
     public ScoreUIObserver() {
-        font = new BitmapFont();
-        font.setColor(1, 1, 1, 1); // White
+        this.font = new BitmapFont();
+        font.setColor(Color.RED);
+        this.batch = new SpriteBatch();
     }
 
-    @Override
     public void update(int score){
-        System.out.println("Score diperbarui: " + score);
+        System.out.println("Score saat ini : " + score);
     }
 
-    public void render(SpriteBatch batch, int score){
+    public void render(int score) {
         batch.begin();
-        font.draw(batch, "Score: " + score, 20, 460);
+        font.draw(batch,"Score : " + score,10,Gdx.graphics.getHeight()-10);
         batch.end();
     }
 
     public void dispose() {
         font.dispose();
+        batch.dispose();
     }
 }

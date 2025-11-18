@@ -24,4 +24,3 @@ public class HomingMissilePool extends ObjectPool<HomingMissile> {
         return missile;
     }
 }
-
