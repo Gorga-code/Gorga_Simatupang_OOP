@@ -4,39 +4,31 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.Stack;
 
-public class GameStateManager implements GameState {
+public class GameStateManager {
     private final Stack<GameState> states;
+
     public GameStateManager() {
-        this.states = new Stack<>();
+        states = new Stack<>();
     }
 
-    public void push(GameState state){
+    public void push(GameState state) {
         states.push(state);
     }
 
     public void pop() {
-        states.pop();
-        dispose();
+        states.pop().dispose();
     }
 
-    public void set(GameState state){
-        states.pop();
+    public void set(GameState state) {
+        states.pop().dispose();
         states.push(state);
     }
 
     public void update(float delta) {
-        if (!states.isEmpty()) {
-            states.peek().update(delta);
-        }
+        states.peek().update(delta);
     }
 
-    @Override
     public void render(SpriteBatch batch) {
-        if (!states.isEmpty()) {
-            states.peek().render(batch);
-        }
+        states.peek().render(batch);
     }
-
-    @Override
-    public void dispose() {}
 }

@@ -23,7 +23,6 @@ import com.gorga.frontend.strategies.EasyDifficultyStrategy;
 import com.gorga.frontend.strategies.HardDifficultyStrategy;
 import com.gorga.frontend.strategies.MediumDifficultyStrategy;
 
-
 public class PlayingState implements GameState {
     private final GameStateManager gsm;
     private final ShapeRenderer shapeRenderer;
@@ -76,13 +75,11 @@ public class PlayingState implements GameState {
         GameManager.getInstance().startGame();
     }
 
-
     public void setDifficulty(DifficultyStrategy newStrategy) {
         this.difficultyStrategy = newStrategy;
         this.obstacleFactory.setWeights(newStrategy.getObstacleWeights());
         System.out.println("Difficulty changed to: " + newStrategy.getClass().getSimpleName());
     }
-
 
     @Override
     public void update(float delta) {
@@ -107,14 +104,12 @@ public class PlayingState implements GameState {
         int currentScoreMeters = (int) player.getDistanceTraveled();
         GameManager.getInstance().setScore(currentScoreMeters);
 
-
         if (currentScoreMeters > lastLoggedScore) {
             System.out.println("Distance: " + currentScoreMeters + "m");
             lastLoggedScore = currentScoreMeters;
         }
 
         updateDifficulty(currentScoreMeters);
-
     }
 
     private void updateDifficulty(int score) {
@@ -133,11 +128,10 @@ public class PlayingState implements GameState {
             spriteBatch = new SpriteBatch();
         }
 
-        spriteBatch.begin();
         spriteBatch.setProjectionMatrix(camera.combined);
-        spriteBatch.end();
+        spriteBatch.begin();
         background.render(spriteBatch);
-
+        spriteBatch.end();
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -148,7 +142,6 @@ public class PlayingState implements GameState {
         }
         shapeRenderer.end();
 
-
         scoreUIObserver.render(GameManager.getInstance().getScore());
     }
 
@@ -158,11 +151,10 @@ public class PlayingState implements GameState {
         camera.update();
     }
 
-
     private void updateObstacles(float delta) {
         obstacleSpawnTimer += delta;
 
-        if (obstacleSpawnTimer >= difficultyStrategy.getSpawnInterval()){
+        if (obstacleSpawnTimer >= difficultyStrategy.getSpawnInterval()) {
             spawnObstacle();
             obstacleSpawnTimer = 0f;
         }
@@ -174,7 +166,6 @@ public class PlayingState implements GameState {
                 ((HomingMissile) obstacle).setTarget(player);
                 ((HomingMissile) obstacle).update(delta);
             }
-
 
             if (obstacle.isOffScreenCamera(cameraLeftEdge)) {
                 obstacleFactory.releaseObstacle(obstacle);
@@ -191,9 +182,7 @@ public class PlayingState implements GameState {
 
         for (int i = 0; i < difficultyStrategy.getDensity(); i++) {
             float spawnX = baseSpawnX + (i * OBSTACLE_CLUSTER_SPACING);
-            obstacleFactory.createRandomObstacle(ground.getTopY(), spawnX,
-
-                player.getHeight());
+            obstacleFactory.createRandomObstacle(ground.getTopY(), spawnX, player.getHeight());
             lastObstacleSpawnX = spawnX;
         }
     }
@@ -219,5 +208,3 @@ public class PlayingState implements GameState {
         background.dispose();
     }
 }
-
-
