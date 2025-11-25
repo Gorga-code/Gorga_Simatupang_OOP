@@ -9,11 +9,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.gorga.frontend.Background;
+import com.gorga.frontend.Coin;
 import com.gorga.frontend.GameManager;
 import com.gorga.frontend.Ground;
 import com.gorga.frontend.Player;
 import com.gorga.frontend.commands.Command;
 import com.gorga.frontend.commands.JetpackCommand;
+import com.gorga.frontend.factories.CoinFactory;
 import com.gorga.frontend.factories.ObstacleFactory;
 import com.gorga.frontend.observers.ScoreUIObserver;
 import com.gorga.frontend.obstacles.BaseObstacle;
@@ -34,6 +36,9 @@ public class PlayingState implements GameState {
     private final Command jetpackCommand;
     private final ScoreUIObserver scoreUIObserver;
     private final ObstacleFactory obstacleFactory;
+
+    private final CoinFactory coinFactory;
+    private float coinSpawnTimer = 0f;
 
     private float obstacleSpawnTimer;
     private float lastObstacleSpawnX = 0f;
@@ -68,6 +73,8 @@ public class PlayingState implements GameState {
         GameManager.getInstance().addObserver(scoreUIObserver);
 
         obstacleFactory = new ObstacleFactory();
+        coinFactory = new CoinFactory();
+
         setDifficulty(new EasyDifficultyStrategy());
 
         obstacleSpawnTimer = 0f;
@@ -88,18 +95,21 @@ public class PlayingState implements GameState {
         }
 
         if (player.isDead()) {
+            GameManager.getInstance().endGame();
             gsm.set(new GameOverState(gsm));
             return;
         }
 
         player.update(delta, false);
-        updateCamera(delta);
+        updateCamera();
         background.update(camera.position.x);
         ground.update(camera.position.x);
         player.checkBoundaries(ground, screenHeight);
 
         updateObstacles(delta);
+        updateCoins(delta);
         checkCollisions();
+        checkCoinCollisions();
 
         int currentScoreMeters = (int) player.getDistanceTraveled();
         GameManager.getInstance().setScore(currentScoreMeters);
@@ -110,6 +120,33 @@ public class PlayingState implements GameState {
         }
 
         updateDifficulty(currentScoreMeters);
+    }
+
+    private void updateCoins(float delta) {
+        coinSpawnTimer += delta;
+        if (coinSpawnTimer > 0.5f) {
+            float spawnX = camera.position.x + screenWidth;
+            coinFactory.createCoinPattern(spawnX, ground.getTopY());
+            coinSpawnTimer = 0;
+        }
+
+        float cameraLeft = camera.position.x - screenWidth / 2f;
+        for (Coin coin : coinFactory.getActiveCoins()) {
+            coin.update(delta);
+            if (coin.getPosition().x + 15f < cameraLeft) {
+                coinFactory.releaseCoin(coin);
+            }
+        }
+    }
+
+    private void checkCoinCollisions() {
+        Rectangle playerCollider = player.getCollider();
+        for (Coin coin : coinFactory.getActiveCoins()) {
+            if (coin.isColliding(playerCollider)) {
+                coin.setActive(false);
+                GameManager.getInstance().addCoin();
+            }
+        }
     }
 
     private void updateDifficulty(int score) {
@@ -136,18 +173,22 @@ public class PlayingState implements GameState {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         player.renderShape(shapeRenderer);
+
         shapeRenderer.setColor(Color.RED);
         for (BaseObstacle obstacle : obstacleFactory.getAllInUseObstacles()) {
             obstacle.render(shapeRenderer);
         }
+
+        for (Coin coin : coinFactory.getActiveCoins()) {
+            coin.renderShape(shapeRenderer);
+        }
         shapeRenderer.end();
 
-        scoreUIObserver.render(GameManager.getInstance().getScore());
+        scoreUIObserver.render(GameManager.getInstance().getScore(), GameManager.getInstance().getCoins());
     }
 
-    private void updateCamera(float delta) {
-        float cameraFocus = player.getPosition().x + screenWidth * cameraOffset;
-        camera.position.x = cameraFocus;
+    private void updateCamera() {
+        camera.position.x = player.getPosition().x + screenWidth * cameraOffset;
         camera.update();
     }
 
@@ -204,6 +245,7 @@ public class PlayingState implements GameState {
             spriteBatch.dispose();
         }
         obstacleFactory.releaseAllObstacles();
+        coinFactory.releaseAll();
         scoreUIObserver.dispose();
         background.dispose();
     }

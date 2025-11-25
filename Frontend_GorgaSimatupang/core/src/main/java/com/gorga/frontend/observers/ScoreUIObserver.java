@@ -11,17 +11,23 @@ public class ScoreUIObserver implements Observer {
 
     public ScoreUIObserver() {
         this.font = new BitmapFont();
-        font.setColor(Color.RED);
+        this.font.setColor(Color.WHITE);
         this.batch = new SpriteBatch();
     }
 
-    public void update(int score){
-        System.out.println("Score saat ini : " + score);
+    @Override
+    public void update(int score) {
+        Gdx.app.log("ScoreUI", "Score updated: " + score);
     }
 
     public void render(int score) {
+        render(score, 0);
+    }
+
+    public void render(int score, int coins) {
         batch.begin();
-        font.draw(batch,"Score : " + score,10,Gdx.graphics.getHeight()-10);
+        font.draw(batch, "Distance: " + score + "m", 10, Gdx.graphics.getHeight() - 20);
+        font.draw(batch, "Coins: " + coins, 10, Gdx.graphics.getHeight() - 40);
         batch.end();
     }
 
