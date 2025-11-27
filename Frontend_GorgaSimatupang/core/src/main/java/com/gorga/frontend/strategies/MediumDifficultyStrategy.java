@@ -10,7 +10,7 @@ public class MediumDifficultyStrategy implements DifficultyStrategy {
     }
 
     @Override
-    public float getDensity() {
+    public int getDensity() {
         return 1;
     }
 
@@ -27,5 +27,10 @@ public class MediumDifficultyStrategy implements DifficultyStrategy {
         weights.put("HorizontalLaser", 2);
         weights.put("HomingMissile", 1);
         return weights;
+    }
+
+    @Override
+    public float getCoinSpawnInterval() {
+        return 1.5f;
     }
 }

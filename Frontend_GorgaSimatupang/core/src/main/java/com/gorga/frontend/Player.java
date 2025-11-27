@@ -1,5 +1,10 @@
 package com.gorga.frontend;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -14,25 +19,44 @@ public class Player {
     private float width = 64f;
     private float height = 64f;
 
-    // Speed system
     private float baseSpeed = 300f;
     private float distanceTraveled = 0f;
 
-    // Death system
     private boolean isDead = false;
     private Vector2 startPosition;
+
+    private Animation<TextureRegion> runAnimation;
+    private TextureRegion flyTexture;
+    private float stateTime = 0f;
 
     public Player(Vector2 startPosition) {
         this.startPosition = new Vector2(startPosition);
         position = new Vector2(startPosition);
 
         collider = new Rectangle(
-            position.x,
-            position.y,
-            width,
-            height
-        );
+                position.x,
+                position.y,
+                width,
+                height);
         velocity = new Vector2(baseSpeed, 0);
+
+        loadTextures();
+    }
+
+    private void loadTextures() {
+        Texture runSheet = new Texture(Gdx.files.internal("run.png"));
+        TextureRegion[][] tmp = TextureRegion.split(runSheet, 36, 36);
+        TextureRegion[] runFrames = new TextureRegion[4];
+        int index = 0;
+        for (int i = 0; i < tmp.length; i++) {
+            for (int j = 0; j < tmp[i].length && index < 4; j++) {
+                runFrames[index++] = tmp[i][j];
+            }
+        }
+        runAnimation = new Animation<>(0.1f, runFrames);
+        runAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+        flyTexture = new TextureRegion(new Texture(Gdx.files.internal("fly.png")));
     }
 
     public void update(float delta, boolean isFlying) {
@@ -43,29 +67,24 @@ public class Player {
                 fly(delta);
             }
             updatePosition(delta);
+            stateTime += delta;
         }
         updateCollider();
     }
 
-
     private void updateDistanceAndSpeed(float delta) {
-        // Track distance traveled
         distanceTraveled += velocity.x * delta;
     }
 
     private void updatePosition(float delta) {
-        // Move forward constantly
         position.x += velocity.x * delta;
-        // Apply vertical movement (gravity/jetpack)
         position.y += velocity.y * delta;
     }
 
     private void applyGravity(float delta) {
         velocity.y -= gravity * delta;
-        // Keep forward speed constant with current speed
         velocity.x = baseSpeed;
 
-        // Clamp vertical velocity to max speed
         if (velocity.y < -maxVerticalSpeed) {
             velocity.y = -maxVerticalSpeed;
         } else if (velocity.y > maxVerticalSpeed) {
@@ -84,31 +103,38 @@ public class Player {
     }
 
     public void checkBoundaries(Ground ground, float ceilingY) {
-        // Ground collision
         if (ground.isColliding(collider)) {
             position.y = ground.getTopY();
             velocity.y = 0;
         }
 
-        // Ceiling collision
         if (position.y + height > ceilingY) {
             position.y = ceilingY - height;
             velocity.y = 0;
         }
     }
 
-    // Debug
+    public void render(SpriteBatch batch, boolean isFlying) {
+        TextureRegion currentFrame;
+        if (isFlying) {
+            currentFrame = flyTexture;
+        } else {
+            currentFrame = runAnimation.getKeyFrame(stateTime);
+        }
+        batch.draw(currentFrame, position.x, position.y, width, height);
+    }
+
     public void renderShape(ShapeRenderer shapeRenderer) {
         shapeRenderer.setColor(0f, 1f, 0f, 1f);
         shapeRenderer.rect(position.x, position.y, width, height);
     }
 
-    // Public method for command pattern
     public void fly() {
         if (!isDead) {
-            velocity.y += force * 1/60f; // Using a standard delta time
+            velocity.y += force * 1 / 60f;
         }
     }
+
     public void die() {
         isDead = true;
         velocity.x = 0;
@@ -122,7 +148,6 @@ public class Player {
         distanceTraveled = 0f;
     }
 
-    // Getters
     public Vector2 getPosition() {
         return position;
     }

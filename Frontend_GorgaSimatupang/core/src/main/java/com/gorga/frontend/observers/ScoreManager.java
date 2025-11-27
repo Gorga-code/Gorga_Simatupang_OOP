@@ -3,11 +3,14 @@ package com.gorga.frontend.observers;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ScoreManager implements Subject{
-    private List<Observer> observers = new ArrayList<>();
-    private int score = 0;
+/**
+ * ScoreManager that implements Subject interface for Observer Pattern
+ */
+public class ScoreManager implements Subject {
+    private List<Observer> observers;
+    private int score;
 
-    public ScoreManager () {
+    public ScoreManager() {
         this.observers = new ArrayList<>();
         this.score = 0;
     }
@@ -17,7 +20,8 @@ public class ScoreManager implements Subject{
         observers.add(observer);
     }
 
-    public void removeObserver(Observer observer){
+    @Override
+    public void removeObserver(Observer observer) {
         observers.remove(observer);
     }
 
@@ -27,10 +31,12 @@ public class ScoreManager implements Subject{
             observer.update(score);
         }
     }
+
     public void setScore(int newScore) {
-        if(newScore != score)
-            score = newScore;
-        notifyObservers(score);
+        if (newScore != this.score) {
+            this.score = newScore;
+            notifyObservers(this.score);
+        }
     }
 
     public int getScore() {

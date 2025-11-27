@@ -2,6 +2,9 @@ package com.gorga.frontend.commands;
 
 import com.gorga.frontend.Player;
 
+/**
+ * Concrete command for jetpack action
+ */
 public class JetpackCommand implements Command {
     private Player player;
 

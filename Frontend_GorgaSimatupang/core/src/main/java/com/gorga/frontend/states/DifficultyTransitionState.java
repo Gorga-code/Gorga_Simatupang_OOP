@@ -1,6 +1,8 @@
 package com.gorga.frontend.states;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Align;
@@ -12,13 +14,19 @@ public class DifficultyTransitionState implements GameState {
     private final PlayingState playingState;
     private final DifficultyStrategy newStrategy;
     private final BitmapFont font;
-    private float timer = 2.0f; // Show screen for 2 seconds
+    private final OrthographicCamera camera;
+    private float timer = 2.0f;
 
     public DifficultyTransitionState(GameStateManager gsm, PlayingState playingState, DifficultyStrategy newStrategy) {
         this.gsm = gsm;
         this.playingState = playingState;
         this.newStrategy = newStrategy;
         this.font = new BitmapFont();
+        this.font.getData().setScale(2.5f);
+        this.font.setColor(Color.YELLOW);
+
+        this.camera = new OrthographicCamera();
+        this.camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     @Override
@@ -32,14 +40,18 @@ public class DifficultyTransitionState implements GameState {
 
     @Override
     public void render(SpriteBatch batch) {
-        // Render the paused playing state in the background
         playingState.render(batch);
 
-        // Render the transition message over it
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        font.getData().setScale(2); // Make font bigger
-        font.draw(batch, "DIFFICULTY INCREASED!", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 1.5f, 0, Align.center, false);
-        font.draw(batch, newStrategy.getClass().getSimpleName(), Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f, 0, Align.center, false);
+
+        String difficultyName = newStrategy.getClass().getSimpleName().replace("DifficultyStrategy", "").toUpperCase();
+        font.draw(batch, "DIFFICULTY INCREASED!", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 1.5f, 0,
+                Align.center, false);
+        font.draw(batch, difficultyName + " MODE", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f, 0,
+                Align.center, false);
+
         batch.end();
     }
 

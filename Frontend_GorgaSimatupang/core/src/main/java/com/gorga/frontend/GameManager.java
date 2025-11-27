@@ -3,6 +3,7 @@ package com.gorga.frontend;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import com.gorga.frontend.observers.Observer;
 import com.gorga.frontend.observers.ScoreManager;
 import com.gorga.frontend.services.BackendService;
 
@@ -28,51 +29,52 @@ public class GameManager {
         return instance;
     }
 
-    public void registerPlayer(String username) {
+    public void startGame() {
+        scoreManager.setScore(0);
+        gameActive = true;
+        coinsCollected = 0;
+        System.out.println("Game Started!");
+    }
+
+    public void setScore(int distance) {
+        if (gameActive) {
+            scoreManager.setScore(distance);
+        }
+    }
+
+    public int getScore() {
+        return scoreManager.getScore();
+    }
+
+    public void addObserver(Observer observer) {
+        scoreManager.addObserver(observer);
+    }
+
+    public void registerPlayer(String username, final Runnable onComplete) {
         backendService.createPlayer(username, new BackendService.RequestCallback() {
             @Override
             public void onSuccess(String response) {
                 try {
                     JsonValue json = new JsonReader().parse(response);
                     currentPlayerId = json.getString("playerId");
-                    Gdx.app.log("GameManager", "Player ID: " + currentPlayerId);
+                    Gdx.app.log("GameManager", "Player Registered ID: " + currentPlayerId);
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
                 } catch (Exception e) {
-                    Gdx.app.error("GameManager", "Parse Error: " + e.getMessage());
+                    Gdx.app.error("GameManager", "Parse Error", e);
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
                 }
             }
 
             @Override
             public void onError(String error) {
-                Gdx.app.error("GameManager", "Registration Failed: " + error);
-            }
-        });
-    }
-
-    public void startGame() {
-        scoreManager.setScore(0);
-        coinsCollected = 0;
-        gameActive = true;
-        System.out.println("Game Started!");
-    }
-
-    public void endGame() {
-        if (currentPlayerId == null) {
-            Gdx.app.error("GameManager", "Cannot submit score: Player ID is null");
-            return;
-        }
-
-        int distance = scoreManager.getScore();
-        int finalScore = distance + (coinsCollected * 10);
-
-        backendService.submitScore(currentPlayerId, finalScore, coinsCollected, distance, new BackendService.RequestCallback() {
-            @Override
-            public void onSuccess(String response) {
-                Gdx.app.log("GameManager", "Score Submitted Successfully: " + response);
-            }
-
-            @Override
-            public void onError(String error) {
-                Gdx.app.error("GameManager", "Score Submission Failed: " + error);
+                Gdx.app.error("GameManager", "Register Error: " + error);
+                if (onComplete != null) {
+                    onComplete.run();
+                }
             }
         });
     }
@@ -82,23 +84,29 @@ public class GameManager {
         Gdx.app.log("GameManager", "COIN COLLECTED! Total: " + coinsCollected);
     }
 
-    public void setScore(int distance) {
-        if (gameActive) {
-            scoreManager.setScore(distance);
-        }
-    }
-
     public int getCoins() {
         return coinsCollected;
     }
 
-    public int getScore() { return scoreManager.getScore(); }
+    public void endGame() {
+        if (currentPlayerId == null) {
+            Gdx.app.error("GameManager", "Cannot submit score. Player ID null.");
+            return;
+        }
+        int distance = scoreManager.getScore();
+        int finalScore = distance + (coinsCollected * 10);
 
-    public void addObserver(com.gorga.frontend.observers.Observer observer) {
-        scoreManager.addObserver(observer);
-    }
+        backendService.submitScore(currentPlayerId, finalScore, coinsCollected, distance,
+                new BackendService.RequestCallback() {
+                    @Override
+                    public void onSuccess(String response) {
+                        Gdx.app.log("GameManager", "Score Submitted: " + response);
+                    }
 
-    public void removeObserver(com.gorga.frontend.observers.Observer observer) {
-        scoreManager.removeObserver(observer);
+                    @Override
+                    public void onError(String error) {
+                        Gdx.app.error("GameManager", "Submit Failed: " + error);
+                    }
+                });
     }
 }

@@ -10,7 +10,7 @@ public class EasyDifficultyStrategy implements DifficultyStrategy {
     }
 
     @Override
-    public float getDensity() {
+    public int getDensity() {
         return 1;
     }
 
@@ -26,5 +26,10 @@ public class EasyDifficultyStrategy implements DifficultyStrategy {
         weights.put("VerticalLaser", 1);
         weights.put("HorizontalLaser", 1);
         return weights;
+    }
+
+    @Override
+    public float getCoinSpawnInterval() {
+        return 2.0f;
     }
 }

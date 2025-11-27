@@ -2,45 +2,36 @@ package com.gorga.frontend.factories;
 
 import com.badlogic.gdx.utils.Array;
 import com.gorga.frontend.Coin;
+
 import com.gorga.frontend.pools.CoinPool;
-import java.util.Random;
 
 public class CoinFactory {
-
-    private final CoinPool coinPool;
-    private final Array<Coin> activeCoins;
-    private final Random random;
+    public final CoinPool coinPool;
+    private Array<Coin> active_coins;
 
     public CoinFactory() {
         coinPool = new CoinPool();
-        activeCoins = new Array<>();
-        random = new Random();
-    }
-
-    public void createCoinPattern(float spawnX, float groundTopY) {
-        if (random.nextFloat() < 0.3f) {
-            float startY = groundTopY + 50 + random.nextFloat() * 100;
-            for (int i = 0; i < 3; i++) {
-                Coin coin = coinPool.obtain(spawnX + (i * 40), startY);
-                activeCoins.add(coin);
-            }
-        }
+        active_coins = new Array<>();
     }
 
     public Array<Coin> getActiveCoins() {
-        return activeCoins;
+        return active_coins;
+    }
+
+    public void addActiveCoins(java.util.List<Coin> coins) {
+        for (Coin coin : coins) {
+            active_coins.add(coin);
+        }
     }
 
     public void releaseCoin(Coin coin) {
-        activeCoins.removeValue(coin, true);
-        coinPool.release(coin);
+        active_coins.removeValue(coin, true);
+        coinPool.free(coin);
     }
 
     public void releaseAll() {
-        for (Coin coin : activeCoins) {
-
-            coinPool.release(coin);
-        }
-        activeCoins.clear();
+        for (Coin c : active_coins)
+            coinPool.free(c);
+        active_coins.clear();
     }
 }

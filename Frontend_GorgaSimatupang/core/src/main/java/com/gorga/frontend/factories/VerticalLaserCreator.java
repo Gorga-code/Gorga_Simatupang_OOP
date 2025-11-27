@@ -44,4 +44,3 @@ public class VerticalLaserCreator implements ObstacleFactory.ObstacleCreator {
     public String getName() { return "VerticalLaser"; }
 }
 
-

@@ -1,4 +1,4 @@
-# GorgaSimatupang_OOP_FE
+# JoshuaRichardoRiangkamang_OOP_FE
 
 A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
 

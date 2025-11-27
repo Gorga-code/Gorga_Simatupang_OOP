@@ -3,7 +3,10 @@ package com.gorga.frontend.commands;
 import com.gorga.frontend.GameManager;
 import com.gorga.frontend.Player;
 
-public class RestartCommand implements Command{
+/**
+ * Concrete command for restarting the game
+ */
+public class RestartCommand implements Command {
     private Player player;
     private GameManager gameManager;
 

@@ -28,9 +28,7 @@ public class Main extends Game {
     @Override
     public void dispose() {
         super.dispose();
-        if (gsm != null) {}
-        if (spriteBatch != null) {
-            spriteBatch.dispose();
-        }
+        gsm.pop();
+        spriteBatch.dispose();
     }
 }

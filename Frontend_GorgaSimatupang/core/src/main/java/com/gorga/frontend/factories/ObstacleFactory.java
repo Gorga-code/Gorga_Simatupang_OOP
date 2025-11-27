@@ -1,12 +1,9 @@
 package com.gorga.frontend.factories;
 
-
 import java.util.*;
 import com.gorga.frontend.obstacles.BaseObstacle;
 
-
 public class ObstacleFactory {
-
 
     public interface ObstacleCreator {
         BaseObstacle create(float groundTopY, float spawnX, float playerHeight, Random rng);
@@ -17,11 +14,9 @@ public class ObstacleFactory {
         String getName();
     }
 
-
     private final Map<String, ObstacleCreator> creators = new HashMap<>();
     private final List<ObstacleCreator> weightedSelection = new ArrayList<>();
     private final Random random = new Random();
-
 
     public ObstacleFactory() {
         // Register all possible creators permanently
@@ -30,11 +25,9 @@ public class ObstacleFactory {
         register(new HomingMissileCreator());
     }
 
-
     private void register(ObstacleCreator creator) {
         creators.put(creator.getName(), creator);
     }
-
 
     public void setWeights(Map<String, Integer> weights) {
         weightedSelection.clear();
@@ -49,9 +42,9 @@ public class ObstacleFactory {
         }
     }
 
-
     public BaseObstacle createRandomObstacle(float groundTopY, float spawnX, float playerHeight) {
         if (weightedSelection.isEmpty()) {
+            // Fallback or throw exception if no weights are set
             return null;
         }
 
@@ -59,12 +52,10 @@ public class ObstacleFactory {
         return creator.create(groundTopY, spawnX, playerHeight, random);
     }
 
-
     private ObstacleCreator selectWeightedCreator() {
         int randomIndex = random.nextInt(weightedSelection.size());
         return weightedSelection.get(randomIndex);
     }
-
 
     public void releaseObstacle(BaseObstacle obstacle) {
         for (ObstacleCreator creator : creators.values()) {
@@ -75,14 +66,11 @@ public class ObstacleFactory {
         }
     }
 
-
     public void releaseAllObstacles() {
         for (ObstacleCreator creator : creators.values()) {
             creator.releaseAll();
-
         }
     }
-
 
     public List<BaseObstacle> getAllInUseObstacles() {
         List<BaseObstacle> list = new ArrayList<>();
@@ -92,9 +80,9 @@ public class ObstacleFactory {
         return list;
     }
 
-
     public List<String> getRegisteredCreatorNames() {
         return new ArrayList<>(creators.keySet());
     }
 }
+
 
